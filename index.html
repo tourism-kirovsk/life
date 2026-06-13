@@ -714,7 +714,22 @@
     window.scrollToPlanner = scrollToPlanner;
     window.openFavModal = openFavModal;
     window.closeFavModal = closeFavModal;
+// Принудительное обновление размеров карты при загрузке и повороте экрана
+window.addEventListener('load', function() {
+    if (map) {
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 200);
+    }
+});
 
+window.addEventListener('resize', function() {
+    if (map) {
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 100);
+    }
+});
     initMap();
     renderReadyRoutes();
 </script>
