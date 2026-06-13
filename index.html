@@ -68,6 +68,23 @@
             background-clip: text;
             color: transparent;
         }
+                /* Гамбургер иконка (три полоски) */
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 22px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .hamburger span {
+            display: block;
+            height: 2.5px;
+            width: 100%;
+            background: #1e90ff;
+            border-radius: 3px;
+            transition: 0.2s;
+        }
 
         /* ВЫПАДАЮЩЕЕ МЕНЮ — улучшенный шрифт */
         .dropdown-menu {
@@ -378,6 +395,8 @@
             .dropdown-menu a { padding: 12px 20px; font-size: 0.95rem; }
             .modal-content h3 { font-size: 1.4rem; }
             .modal-content p { font-size: 0.9rem; }
+                        .hamburger { width: 20px; height: 16px; }
+            .hamburger span { height: 2px; }
         }
     </style>
 </head>
@@ -385,6 +404,11 @@
 
 <div class="logo" id="logoDropdown">
     <div class="logo-button">
+        <div class="hamburger" id="hamburgerIcon">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
         <div class="logo-icon"><i class="fas fa-mountain-sun"></i></div>
         <div class="logo-text">KHIBINY LIFE</div>
     </div>
