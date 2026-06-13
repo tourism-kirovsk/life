@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>KHIBINY LIFE | Туристические маршруты Кировска</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -309,7 +309,8 @@
             #searchInput { width: 100%; }
             .main { flex-direction: column; padding: 0 1rem 1rem 1rem; }
             .sidebar { max-height: 40vh; }
-             #map { height: 50vh; }
+            /* Ключевое изменение: фиксированная высота карты на мобильных вместо vh */
+            #map { height: 400px !important; }
             .route-panel { margin: 1rem; gap: 10px; flex-wrap: wrap; }
         }
     </style>
@@ -443,13 +444,12 @@
 
     let map, clusterGroup;
     let currentPolyline = null;
-    let currentRoutePoints = [];   // массив [lat, lng]
+    let currentRoutePoints = [];
     let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     let activeCategory = "all";
     let searchQuery = "";
     let minRating = 0;
 
-    // Функции маршрута
     function isPointInRoute(lat, lng) {
         return currentRoutePoints.some(p => p[0] === lat && p[1] === lng);
     }
@@ -458,7 +458,6 @@
         if (!isPointInRoute(lat, lng)) {
             currentRoutePoints.push([lat, lng]);
             drawRouteLine();
-            // Обновляем попап для этого маркера, чтобы кнопка изменилась
             updatePopupForMarker(lat, lng);
         }
     }
@@ -470,6 +469,7 @@
     }
 
     function updatePopupForMarker(lat, lng) {
+        if (!clusterGroup) return;
         const markers = clusterGroup.getLayers();
         const marker = markers.find(m => m.getLatLng().lat === lat && m.getLatLng().lng === lng);
         if (marker) {
@@ -491,7 +491,6 @@
         }
     }
 
-    // Кастомный попап с красивым оформлением и мгновенным переключением
     function bindPopupWithButtons(place, marker) {
         const inRoute = isPointInRoute(place.lat, place.lon);
         const routeButtonText = inRoute ? "🗑️ Убрать из маршрута" : "➕ Добавить в маршрут";
@@ -527,11 +526,11 @@
                 marker.openPopup();
             }
         }
-        applyFilters(); // обновить сайдбар
+        applyFilters();
     }
 
-    // Рендер сайдбара и маркеров
     function renderSidebarAndMarkers(filtered) {
+        if (!clusterGroup) return;
         clusterGroup.clearLayers();
         const sidebar = document.getElementById('sidebar');
         sidebar.innerHTML = '';
@@ -584,23 +583,26 @@
         if (!saved) { alert("Нет сохранённого маршрута."); return; }
         currentRoutePoints = JSON.parse(saved);
         drawRouteLine();
-        // Обновляем все попапы
-        const markers = clusterGroup.getLayers();
-        markers.forEach(m => {
-            const latlng = m.getLatLng();
-            const place = allPlaces.find(p => p.lat === latlng.lat && p.lon === latlng.lng);
-            if (place) bindPopupWithButtons(place, m);
-        });
+        if (clusterGroup) {
+            const markers = clusterGroup.getLayers();
+            markers.forEach(m => {
+                const latlng = m.getLatLng();
+                const place = allPlaces.find(p => p.lat === latlng.lat && p.lon === latlng.lng);
+                if (place) bindPopupWithButtons(place, m);
+            });
+        }
     }
     function showRouteFromReady(points) {
         currentRoutePoints = points;
         drawRouteLine();
-        const markers = clusterGroup.getLayers();
-        markers.forEach(m => {
-            const latlng = m.getLatLng();
-            const place = allPlaces.find(p => p.lat === latlng.lat && p.lon === latlng.lng);
-            if (place) bindPopupWithButtons(place, m);
-        });
+        if (clusterGroup) {
+            const markers = clusterGroup.getLayers();
+            markers.forEach(m => {
+                const latlng = m.getLatLng();
+                const place = allPlaces.find(p => p.lat === latlng.lat && p.lon === latlng.lng);
+                if (place) bindPopupWithButtons(place, m);
+            });
+        }
     }
 
     async function exportRoutePDF() {
@@ -663,6 +665,7 @@
     document.getElementById("ratingFilter").addEventListener("change", (e) => { minRating = parseFloat(e.target.value) || 0; applyFilters(); });
 
     function initMap() {
+        if (map) return;
         map = L.map('map').setView([67.615, 33.66], 13);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB',
@@ -714,24 +717,26 @@
     window.scrollToPlanner = scrollToPlanner;
     window.openFavModal = openFavModal;
     window.closeFavModal = closeFavModal;
-// Принудительное обновление размеров карты при загрузке и повороте экрана
-window.addEventListener('load', function() {
-    if (map) {
-        setTimeout(function() {
-            map.invalidateSize();
-        }, 200);
-    }
-});
 
-window.addEventListener('resize', function() {
-    if (map) {
-        setTimeout(function() {
-            map.invalidateSize();
-        }, 100);
-    }
-});
     initMap();
     renderReadyRoutes();
+
+    // Множественные вызовы для фикса карты на мобильных
+    function forceMapResize() {
+        if (map) {
+            map.invalidateSize(true);
+            console.log("Map resized");
+        }
+    }
+    window.addEventListener('load', function() {
+        setTimeout(forceMapResize, 200);
+        setTimeout(forceMapResize, 500);
+        setTimeout(forceMapResize, 1000);
+    });
+    window.addEventListener('resize', forceMapResize);
+    window.addEventListener('orientationchange', function() {
+        setTimeout(forceMapResize, 200);
+    });
 </script>
 </body>
 </html>
