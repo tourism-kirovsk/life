@@ -22,7 +22,7 @@
             scroll-behavior: smooth;
         }
 
-        /* ЛОГОТИП С ВЫПАДАЮЩИМ МЕНЮ */
+        /* ЛОГОТИП С ВЫПАДАЮЩИМ МЕНЮ (упрощённый, без конфликтов) */
         .logo {
             position: fixed;
             top: 20px;
@@ -78,16 +78,11 @@
             border: 1px solid rgba(30,144,255,0.3);
             width: 220px;
             overflow: hidden;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
+            display: none;
             z-index: 1002;
         }
         .dropdown-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
+            display: block;
         }
         .dropdown-menu a {
             display: block;
@@ -107,7 +102,7 @@
             color: #1e90ff;
         }
 
-        /* HERO — яркое фото */
+        /* HERO */
         .hero {
             height: 100vh;
             min-height: 600px;
@@ -514,7 +509,7 @@
     let searchQuery = "";
     let minRating = 0;
 
-    // Функции маршрута (без изменений)
+    // ---- все функции карты, маршрутов (без изменений) ----
     function isPointInRoute(lat, lng) {
         return currentRoutePoints.some(p => p[0] === lat && p[1] === lng);
     }
@@ -713,20 +708,28 @@
     }
     function closeInfoModal() { document.getElementById("infoModal").style.display = "none"; }
     
-    // Выпадающее меню логотипа
-    const logo = document.getElementById("logoDropdown");
-    const dropdown = document.getElementById("dropdownMenu");
+    // ---- ВЫПАДАЮЩЕЕ МЕНЮ (рабочая версия) ----
+    const logoEl = document.getElementById("logoDropdown");
+    const dropdownMenu = document.getElementById("dropdownMenu");
+    
     function toggleDropdown(e) {
         e.stopPropagation();
-        dropdown.classList.toggle("show");
+        if (dropdownMenu.classList.contains("show")) {
+            dropdownMenu.classList.remove("show");
+        } else {
+            dropdownMenu.classList.add("show");
+        }
     }
     function closeDropdown() {
-        dropdown.classList.remove("show");
+        dropdownMenu.classList.remove("show");
     }
-    logo.addEventListener("click", toggleDropdown);
-    document.addEventListener("click", function(e) {
-        if (!logo.contains(e.target)) closeDropdown();
+    logoEl.addEventListener("click", toggleDropdown);
+    document.addEventListener("click", function(event) {
+        if (!logoEl.contains(event.target)) {
+            closeDropdown();
+        }
     });
+    // Обработка пунктов меню
     document.querySelectorAll(".dropdown-menu a").forEach(item => {
         item.addEventListener("click", (e) => {
             e.preventDefault();
@@ -825,10 +828,7 @@
     initMap();
     renderReadyRoutes();
     
-    // фикс для карты на мобильных
-    function forceMapResize() {
-        if (map) map.invalidateSize(true);
-    }
+    function forceMapResize() { if (map) map.invalidateSize(true); }
     window.addEventListener('load', function() {
         setTimeout(forceMapResize, 200);
         setTimeout(forceMapResize, 500);
