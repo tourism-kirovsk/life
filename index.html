@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>KHIBINY LIFE | Туристические маршруты Кировска</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -22,12 +22,15 @@
             scroll-behavior: smooth;
         }
 
-        /* ЛОГОТИП KHIBINY LIFE */
+        /* ЛОГОТИП С ВЫПАДАЮЩИМ МЕНЮ */
         .logo {
             position: fixed;
             top: 20px;
             left: 25px;
-            z-index: 1000;
+            z-index: 1001;
+            cursor: pointer;
+        }
+        .logo-button {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
             border-radius: 60px;
@@ -38,6 +41,11 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.1);
             border: 1px solid rgba(30,144,255,0.5);
             font-family: 'Montserrat', sans-serif;
+            transition: 0.2s;
+        }
+        .logo-button:hover {
+            background: white;
+            transform: translateY(-2px);
         }
         .logo-icon {
             background: linear-gradient(135deg, #1e90ff, #0a6bc2);
@@ -59,7 +67,45 @@
             background-clip: text;
             color: transparent;
         }
-        .logo-text span { font-weight: 800; color: #1e90ff; background: none; -webkit-background-clip: unset; background-clip: unset; }
+        /* Выпадающее меню */
+        .dropdown-menu {
+            position: absolute;
+            top: 65px;
+            left: 0;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+            border: 1px solid rgba(30,144,255,0.3);
+            width: 220px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 1002;
+        }
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dropdown-menu a {
+            display: block;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #1e4663;
+            font-weight: 500;
+            transition: 0.2s;
+            border-bottom: 1px solid #eef2f8;
+            cursor: pointer;
+        }
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+        .dropdown-menu a:hover {
+            background: #eef3fc;
+            color: #1e90ff;
+        }
 
         /* HERO — яркое фото */
         .hero {
@@ -110,7 +156,7 @@
         }
         .main-btn:hover { transform: translateY(-3px); background: linear-gradient(95deg, #3aa2ff, #0e7ad5); }
 
-        /* Категории — голубые акценты */
+        /* Категории */
         .categories {
             display: flex;
             flex-wrap: wrap;
@@ -286,6 +332,7 @@
         }
         .submit-btn:hover { background: #0a6bc2; transform: translateY(-2px); }
 
+        /* Модальные окна для информации */
         .modal {
             display: none; position: fixed; z-index: 9999; left: 0; top: 0;
             width: 100%; height: 100%; background: rgba(0,0,0,0.6);
@@ -300,7 +347,8 @@
         .fav-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #cde0ef; }
 
         @media (max-width: 800px) {
-            .logo { top: 10px; left: 10px; padding: 5px 16px; }
+            .logo { top: 10px; left: 10px; }
+            .logo-button { padding: 5px 16px; }
             .logo-text { font-size: 1rem; }
             .hero-overlay h1 { font-size: 2rem; }
             .categories { flex-direction: column; margin: -1rem 1rem 1rem 1rem; }
@@ -309,7 +357,6 @@
             #searchInput { width: 100%; }
             .main { flex-direction: column; padding: 0 1rem 1rem 1rem; }
             .sidebar { max-height: 40vh; }
-            /* Ключевое изменение: фиксированная высота карты на мобильных вместо vh */
             #map { height: 400px !important; }
             .route-panel { margin: 1rem; gap: 10px; flex-wrap: wrap; }
         }
@@ -317,9 +364,18 @@
 </head>
 <body>
 
-<div class="logo">
-    <div class="logo-icon"><i class="fas fa-mountain-sun"></i></div>
-    <div class="logo-text">KHIBINY LIFE</div>
+<div class="logo" id="logoDropdown">
+    <div class="logo-button">
+        <div class="logo-icon"><i class="fas fa-mountain-sun"></i></div>
+        <div class="logo-text">KHIBINY LIFE</div>
+    </div>
+    <div class="dropdown-menu" id="dropdownMenu">
+        <a data-action="about">📖 О проекте</a>
+        <a data-action="partners">🤝 Партнёрам</a>
+        <a data-action="plan">🗺️ Спланировать маршрут</a>
+        <a data-action="readyRoutes">✨ Готовые маршруты</a>
+        <a data-action="contacts">📞 Контакты</a>
+    </div>
 </div>
 
 <section class="hero">
@@ -363,7 +419,7 @@
     <button onclick="exportRoutePDF()"><i class="fas fa-file-pdf"></i> Скачать PDF</button>
 </div>
 
-<h2 class="routes-title">✨ Готовые маршруты</h2>
+<h2 class="routes-title" id="routes-title">✨ Готовые маршруты</h2>
 <div id="routes"></div>
 
 <div class="feedback-section">
@@ -387,6 +443,14 @@
         <span class="close" onclick="closeFavModal()">&times;</span>
         <h3><i class="fas fa-heart" style="color:#e34234;"></i> Избранное</h3>
         <div id="favoritesList"></div>
+    </div>
+</div>
+
+<!-- Общее модальное окно для текстовой информации -->
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeInfoModal()">&times;</span>
+        <div id="infoModalContent"></div>
     </div>
 </div>
 
@@ -450,10 +514,10 @@
     let searchQuery = "";
     let minRating = 0;
 
+    // Функции маршрута (без изменений)
     function isPointInRoute(lat, lng) {
         return currentRoutePoints.some(p => p[0] === lat && p[1] === lng);
     }
-
     function addToRoute(lat, lng) {
         if (!isPointInRoute(lat, lng)) {
             currentRoutePoints.push([lat, lng]);
@@ -461,13 +525,11 @@
             updatePopupForMarker(lat, lng);
         }
     }
-
     function removeFromRoute(lat, lng) {
         currentRoutePoints = currentRoutePoints.filter(p => !(p[0] === lat && p[1] === lng));
         drawRouteLine();
         updatePopupForMarker(lat, lng);
     }
-
     function updatePopupForMarker(lat, lng) {
         if (!clusterGroup) return;
         const markers = clusterGroup.getLayers();
@@ -480,7 +542,6 @@
             }
         }
     }
-
     function drawRouteLine() {
         if (currentPolyline) map.removeLayer(currentPolyline);
         if (currentRoutePoints.length >= 2) {
@@ -490,7 +551,6 @@
             map.setView(currentRoutePoints[0], 14);
         }
     }
-
     function bindPopupWithButtons(place, marker) {
         const inRoute = isPointInRoute(place.lat, place.lon);
         const routeButtonText = inRoute ? "🗑️ Убрать из маршрута" : "➕ Добавить в маршрут";
@@ -512,7 +572,6 @@
         `;
         marker.bindPopup(popupContent, { className: 'custom-popup' });
     }
-
     function toggleFavoriteAndRefreshPopup(name, lat, lon) {
         if (favorites.includes(name)) favorites = favorites.filter(f => f !== name);
         else favorites.push(name);
@@ -528,7 +587,6 @@
         }
         applyFilters();
     }
-
     function renderSidebarAndMarkers(filtered) {
         if (!clusterGroup) return;
         clusterGroup.clearLayers();
@@ -539,7 +597,6 @@
             const marker = L.marker([place.lat, place.lon], { icon });
             bindPopupWithButtons(place, marker);
             clusterGroup.addLayer(marker);
-
             const card = document.createElement('div');
             card.className = 'place-card';
             const stars = "★".repeat(Math.floor(place.rating)) + "☆".repeat(5 - Math.floor(place.rating));
@@ -554,7 +611,6 @@
             sidebar.appendChild(card);
         });
     }
-
     function getIconHtml(type) {
         if (type === 'hotel') return '<i class="fas fa-hotel"></i>';
         if (type === 'food') return '<i class="fas fa-utensils"></i>';
@@ -562,7 +618,6 @@
         if (type === 'place') return '<i class="fas fa-mountain"></i>';
         return '<i class="fas fa-map-pin"></i>';
     }
-
     function applyFilters() {
         let filtered = allPlaces.filter(p => {
             if (activeCategory !== "all" && p.type !== activeCategory) return false;
@@ -572,7 +627,6 @@
         });
         renderSidebarAndMarkers(filtered);
     }
-
     function saveCurrentRoute() {
         if (currentRoutePoints.length === 0) { alert("Маршрут пуст. Добавьте места."); return; }
         localStorage.setItem("savedRoute", JSON.stringify(currentRoutePoints));
@@ -604,7 +658,6 @@
             });
         }
     }
-
     async function exportRoutePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF("p", "mm", "a4");
@@ -632,9 +685,9 @@
         });
         doc.save("khibiny_life_route.pdf");
     }
-
     function scrollToPlanner() { document.getElementById("planner-section").scrollIntoView({ behavior: "smooth" }); }
-
+    function scrollToRoutes() { document.getElementById("routes-title").scrollIntoView({ behavior: "smooth" }); }
+    
     function openFavModal() {
         const modal = document.getElementById("favoritesModal");
         const container = document.getElementById("favoritesList");
@@ -650,7 +703,59 @@
         modal.style.display = "flex";
     }
     function closeFavModal() { document.getElementById("favoritesModal").style.display = "none"; }
-
+    
+    // Модальное окно для информации
+    function showInfoModal(title, content) {
+        const modal = document.getElementById("infoModal");
+        const container = document.getElementById("infoModalContent");
+        container.innerHTML = `<h3>${title}</h3><div style="margin-top: 1rem;">${content}</div>`;
+        modal.style.display = "flex";
+    }
+    function closeInfoModal() { document.getElementById("infoModal").style.display = "none"; }
+    
+    // Выпадающее меню логотипа
+    const logo = document.getElementById("logoDropdown");
+    const dropdown = document.getElementById("dropdownMenu");
+    function toggleDropdown(e) {
+        e.stopPropagation();
+        dropdown.classList.toggle("show");
+    }
+    function closeDropdown() {
+        dropdown.classList.remove("show");
+    }
+    logo.addEventListener("click", toggleDropdown);
+    document.addEventListener("click", function(e) {
+        if (!logo.contains(e.target)) closeDropdown();
+    });
+    document.querySelectorAll(".dropdown-menu a").forEach(item => {
+        item.addEventListener("click", (e) => {
+            e.preventDefault();
+            const action = item.getAttribute("data-action");
+            closeDropdown();
+            switch(action) {
+                case "about":
+                    showInfoModal("О проекте KHIBINY LIFE", 
+                        "<p>Цифровая платформа для информационного сопровождения туристов в городе Кировск. Объединяет данные о достопримечательностях, отелях, ресторанах, досуге и готовых маршрутах. Создана в рамках практико-ориентированного проекта для повышения доступности туристической информации и поддержки местного бизнеса.</p><p>Проект реализован с использованием интерактивной карты, фильтров, системы избранного и построения маршрутов.</p>");
+                    break;
+                case "partners":
+                    showInfoModal("Партнёрам", 
+                        "<p>Приглашаем к сотрудничеству отели, рестораны, туроператоров и гидов города Кировска. Размещение информации о ваших услугах на платформе KHIBINY LIFE — бесплатно. Для добавления объектов или обновления данных свяжитесь с нами через форму обратной связи.</p><p>Совместно сделаем туристическую среду Кировска ещё комфортнее!</p>");
+                    break;
+                case "plan":
+                    scrollToPlanner();
+                    break;
+                case "readyRoutes":
+                    scrollToRoutes();
+                    break;
+                case "contacts":
+                    showInfoModal("Контакты", 
+                        "<p>📧 Email: info@khibiny-life.ru</p><p>📞 Телефон: +7 (81531) 5-26-63 (Туристско-информационный центр Кировска)</p><p>📍 Адрес: г. Кировск, ул. Ленина, 16а</p><p>🌐 Онлайн-форма на сайте — раздел «Пишите нам»</p>");
+                    break;
+                default: break;
+            }
+        });
+    });
+    
     // UI обработчики
     document.querySelectorAll(".cat-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -663,7 +768,7 @@
     });
     document.getElementById("searchInput").addEventListener("input", (e) => { searchQuery = e.target.value; applyFilters(); });
     document.getElementById("ratingFilter").addEventListener("change", (e) => { minRating = parseFloat(e.target.value) || 0; applyFilters(); });
-
+    
     function initMap() {
         if (map) return;
         map = L.map('map').setView([67.615, 33.66], 13);
@@ -677,7 +782,6 @@
         map.addLayer(clusterGroup);
         applyFilters();
     }
-
     function renderReadyRoutes() {
         const container = document.getElementById("routes");
         container.innerHTML = "";
@@ -693,7 +797,6 @@
             container.appendChild(card);
         });
     }
-
     const form = document.getElementById("feedbackForm");
     form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -705,7 +808,7 @@
         form.reset();
         setTimeout(() => document.getElementById("formStatus").innerHTML = "", 4000);
     });
-
+    
     window.addToRoute = addToRoute;
     window.removeFromRoute = removeFromRoute;
     window.updatePopupForMarker = updatePopupForMarker;
@@ -717,26 +820,21 @@
     window.scrollToPlanner = scrollToPlanner;
     window.openFavModal = openFavModal;
     window.closeFavModal = closeFavModal;
-
+    window.closeInfoModal = closeInfoModal;
+    
     initMap();
     renderReadyRoutes();
-
-    // Множественные вызовы для фикса карты на мобильных
+    
+    // фикс для карты на мобильных
     function forceMapResize() {
-        if (map) {
-            map.invalidateSize(true);
-            console.log("Map resized");
-        }
+        if (map) map.invalidateSize(true);
     }
     window.addEventListener('load', function() {
         setTimeout(forceMapResize, 200);
         setTimeout(forceMapResize, 500);
-        setTimeout(forceMapResize, 1000);
     });
     window.addEventListener('resize', forceMapResize);
-    window.addEventListener('orientationchange', function() {
-        setTimeout(forceMapResize, 200);
-    });
+    window.addEventListener('orientationchange', function() { setTimeout(forceMapResize, 200); });
 </script>
 </body>
 </html>
